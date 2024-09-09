@@ -65,11 +65,7 @@ class CustomerTest {
         Assertions.assertEquals(4.0, this.customer2.calculateTotalBill());
         Assertions.assertEquals(23.0, this.customer9.calculateTotalBill());
     }
-    @Test // how to do it?? how do you test void?? doesnt return anything
-    void t052_customerAddToCart(Product product, int number) {
-//        Assertions.assertEquals();
-    }
-    // PETYA
+
     @Test
     void t053_customerGetNumberOfItems() {
         Assertions.assertEquals(0, this.customer0.getNumberOfItems());

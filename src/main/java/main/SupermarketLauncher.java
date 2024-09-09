@@ -10,8 +10,8 @@ public class SupermarketLauncher {
         String supermarketFile = "src/main/resources/jambiBigJson.txt";
         Supermarket supermarket = new SupermarketBuilder(supermarketFile).initializeSupermarket().addProducts().addCustomers().create();
 
-//        supermarket.printProductStatistics();
+        supermarket.printProductStatistics();
         supermarket.printCustomerStatistics();
-//        supermarket.printRevenueStatistics();
+        supermarket.printRevenueStatistics();
     }
 }

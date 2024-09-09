@@ -3,6 +3,8 @@ package model;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Supermarket Customer and purchase statistics
@@ -76,7 +78,6 @@ public class Supermarket {
         System.out.println();
         System.out.println(">>> Products and zipcodes");
         System.out.println();
-        // structure is: Map<Product, Set<String>> findZipcodesPerProduct()
         findZipcodesPerProduct().forEach((p, setZipcodes) -> {
             System.out.printf("%s:\n\t", p.getDescription());
             String zipCodesStr = String.join(", ", setZipcodes);
@@ -86,14 +87,15 @@ public class Supermarket {
         System.out.println();
         System.out.println(">>> Most popular products");
         System.out.println();
-        // TODO stap 5: display the product(s) that most customers bought
+        // stap 5: display the product(s) that most customers bought TODO
         System.out.println("Product(s) bought by most customers: ");
-
+        findMostPopularProducts().forEach(p -> System.out.println("\t" + p.getDescription()));
         System.out.println();
         System.out.println(">>> Most bought products per zipcode");
         System.out.println();
-        // TODO stap 5: display most bought products per zipcode
-
+        // stap 5: display most bought products per zipcode: DONE
+        Map<String, Product> sortedMap = new TreeMap<>(findMostBoughtProductByZipcode());
+        sortedMap.forEach((key, val) -> System.out.println(key + "   " + val.getDescription()));
         System.out.println();
     }
 
@@ -107,14 +109,14 @@ public class Supermarket {
         }
         System.out.println("\n>>>>> Customer Statistics of all purchases <<<<<");
         System.out.println();
-        //stap 4: calculate and show the customer(s) with the highest bill and most paying customer DONE
+        //stap 4: calculate and show the customer(s) with the highest bill and most paying customer TODO
         System.out.printf("Customer that has the highest bill of %.2f euro: \n", findHighestBill());
+//        findMostPayingCustomers().forEach((k, val) -> System.out.println(k)); // what if 2 customers have the highest bill?
         System.out.println(findMostPayingCustomer()); // changed Customer.toString: from product, to product.getDescription()
         System.out.println();
         System.out.println(">>> Time intervals with number of customers\n");
         Map<LocalTime, Integer> customersPerQuarterhour = countCustomersPerInterval(INTERVAL_IN_MINUTES);
-        // TODO stap 4: display the times of an interval and number of customers.
-//         public Map<LocalTime, Integer> countCustomersPerInterval(int minutes)
+        // stap 4: display the times of an interval and number of customers. TODO
         customersPerQuarterhour.forEach((timeInterval, count) -> {
             System.out.printf("Between %s and %s the number of customers was %d\n", timeInterval, timeInterval.plusMinutes(INTERVAL_IN_MINUTES), count);
         });
@@ -125,19 +127,21 @@ public class Supermarket {
      */
     public void printRevenueStatistics() {
         System.out.println("\n>>>>> Revenue Statistics of all purchases <<<<<");
-        // TODO stap 5: calculate and show the total revenue and the average revenue
+        // stap 5: calculate and show the total revenue and the average revenue DONE
         System.out.printf("\nTotal revenue = %.2f\nAverage revenue per customer = %.2f\n", findTotalRevenue(), findAverageRevenue());
         System.out.println();
         System.out.print(">>> Revenues per zip-code:\n");
         System.out.println();
-        // TODO stap 5 calculate and show total revenues per zipcode, use forEach and lambda expression
-        Map<String, Double> revenues = this.getRevenueByZipcode();
-
+        //stap 5 calculate and show total revenues per zipcode, use forEach and lambda expression TODO
+        Map<String, Double> revenuesZipcode = this.getRevenueByZipcode();
+        revenuesZipcode.forEach((key, val) -> System.out.printf("%s %.2f\n", key, val));
         System.out.println();
         System.out.printf(">>> Revenues per interval of %d minutes\n", INTERVAL_IN_MINUTES);
         System.out.println();
-        // TODO stap 5: show the revenues per time interval of 15 minutes, use forEach and lambda expression
-
+        //stap 5: show the revenues per time interval of 15 minutes, use forEach and lambda expression TODO
+        calculateRevenuePerInterval(INTERVAL_IN_MINUTES).forEach((key, val) -> {
+            System.out.printf("Between %s and %s the revenue was %.2f\n", key, key.plusMinutes(INTERVAL_IN_MINUTES), val);
+        });
     }
 
     /**
@@ -186,11 +190,12 @@ public class Supermarket {
      *
      * @return Map with map of product and number per zipcode
      */
-//        // TODO stap 3: create an appropriate data structure for zipcodes -> NB ** GIVES ERRORS WHEN THE ZIPCODE HAS NULL PURCHASES IN TESTS....
+//        // stap 3: create an appropriate data structure for zipcodes TODO
 //        //  and the collection of products with numbers bought
 //        //  find all the product per zipcode and the number bought by a customer with the zipcode
     public Map<String, Map<Product, Integer>> findNumberOfProductsByZipcode() {
         Map<String, Map<Product, Integer>> resultMap = new HashMap<>();
+
         for (Customer c : customers) {
             c.getItemsCart().forEach((product, count) -> {
                 Map<Product, Integer> currentProductsForZip;
@@ -199,14 +204,16 @@ public class Supermarket {
                     currentProductsForZip.put(product, currentProductsForZip.getOrDefault(product, 0) + count);
                 } else {
                     currentProductsForZip = new HashMap<>();
-                    if (count != 0)
-                        currentProductsForZip.put(product, count);
+                    currentProductsForZip.put(product, count);
+                    resultMap.put(c.getZipCode(), currentProductsForZip);
                 }
                 if (!currentProductsForZip.isEmpty())
                     resultMap.put(c.getZipCode(), currentProductsForZip);
                 else
-                    resultMap.put(c.getZipCode(), null);
+                    resultMap.put(c.getZipCode(), new HashMap<>());
             });
+            if (c.getItemsCart().isEmpty())
+                resultMap.put(c.getZipCode(), new HashMap<>());
         }
         return resultMap;
     }
@@ -218,7 +225,7 @@ public class Supermarket {
      * @return Map with number of customers per time interval
      */
     public Map<LocalTime, Integer> countCustomersPerInterval(int minutes) {
-//         stap 4: create an appropriate data structure for the number per interval  and calculate its contents DONE
+//         stap 4: create an appropriate data structure for the number per interval  and calculate its contents TODO
 
         Map<LocalTime, Integer> result = new TreeMap<>(); // Initialize result map with 0 counts for all intervals
         LocalTime time = openTime;
@@ -254,23 +261,35 @@ public class Supermarket {
      * @return value of the highest bill
      */
     public double findHighestBill() {
-        // stap 4: use a stream to find the highest bill DONE
+        // stap 4: use a stream to find the highest bill TODO
         return customers.stream()
                 .mapToDouble(Customer::calculateTotalBill)
                 .max()
                 .orElse(0.0);
-//        return 0.0; original code
     }
 
     /**
      * @return customer with highest bill
      */
     public Customer findMostPayingCustomer() {
-        // stap 4: use a stream and the highest bill to find the most paying customer DONE
+        // stap 4: use a stream and the highest bill to find the most paying customer TODO
         return customers.stream()
                 .max(Comparator.comparing(Customer::calculateTotalBill))
                 .orElse(null);
     }
+
+    // above was required, however we could have more than 1 customer with the same bill: "collision"
+//    public Map<Customer, Double> findMostPayingCustomers() {
+//        double highestBill = customers.stream()
+//                .mapToDouble(Customer::calculateTotalBill)
+//                .max()
+//                .orElse(0); // Get the highest bill
+//
+//        return customers.stream()
+//                .filter(c -> c.calculateTotalBill() == highestBill)
+//                .collect(Collectors.toMap(Function.identity(), Customer::calculateTotalBill));
+//    }
+
 
     /**
      * calculates the total revenue of all customers purchases
@@ -278,8 +297,10 @@ public class Supermarket {
      * @return total revenue
      */
     public double findTotalRevenue() {
-        // TODO Stap 5: use a stream to find the total of all bills
-        return 0.0;
+        // Stap 5: use a stream to find the total of all bills TODO
+        return customers.stream()
+                .mapToDouble(Customer::calculateTotalBill)
+                .sum();
     }
 
     /**
@@ -288,8 +309,11 @@ public class Supermarket {
      * @return average revenue
      */
     public double findAverageRevenue() {
-        // TODO Stap 5: use a stream to find the average of the bills
-        return 0.0;
+        // Stap 5: use a stream to find the average of the bills TODO
+        return customers.stream()
+                .mapToDouble(Customer::calculateTotalBill)
+                .average()
+                .orElse(0.0);
     }
 
     /**
@@ -298,10 +322,14 @@ public class Supermarket {
      * @return Map with revenues per zip code
      */
     public Map<String, Double> getRevenueByZipcode() {
-        // TODO Stap 5: create an appropriate data structure for the revenue
+        // Stap 5: create an appropriate data structure for the revenue  TODO
         //  use stream and collector to find the content
-
-        return null;
+        return customers.stream()
+                .collect(Collectors.groupingBy(
+                        Customer::getZipCode,
+                        TreeMap::new,
+                        Collectors.summingDouble(Customer::calculateTotalBill)
+                ));
     }
 
     /**
@@ -311,8 +339,22 @@ public class Supermarket {
      */
     public Set<Product> findMostPopularProducts() {
         // TODO Stap 5: create an appropriate data structure for the most popular products and find its contents
+        // Create a map of products and their frequencies
+        Map<Product, Long> productFrequency = customers.stream()
+                .flatMap(customer -> customer.getItemsCart().keySet().stream())
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-        return null;
+        // Find the maximum frequency
+        OptionalLong maxFrequency = productFrequency.values().stream().mapToLong(Long::longValue).max();
+
+        // If maxFrequency exists (i.e., there are products), return the products that have the maximum frequency
+        // Otherwise, return an empty set
+        return maxFrequency.isPresent() ?
+                productFrequency.entrySet().stream()
+                        .filter(entry -> entry.getValue() == maxFrequency.getAsLong())
+                        .map(Map.Entry::getKey)
+                        .collect(Collectors.toSet())
+                : Collections.emptySet();
     }
 
     /**
@@ -321,12 +363,26 @@ public class Supermarket {
      *
      * @return Map with most bought product per zip code
      */
+
     public Map<String, Product> findMostBoughtProductByZipcode() {
         // TODO Stap 5: create an appropriate data structure for the mostBought
         //  and calculate its contents
-
-        return null;
+        return customers.stream()
+                .collect(Collectors.groupingBy(
+                        Customer::getZipCode,
+                        Collectors.collectingAndThen(
+                                Collectors.flatMapping(
+                                        customer -> customer.getItemsCart().entrySet().stream(),
+                                        Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue))
+                                ),
+                                map -> map.entrySet().stream()
+                                        .max(Map.Entry.comparingByValue())
+                                        .map(Map.Entry::getKey)
+                                        .orElse(null)
+                        )
+                ));
     }
+
 
     /**
      * calculates a map of revenues per time interval based on the length of the interval in minutes
@@ -337,8 +393,32 @@ public class Supermarket {
         // TODO Stap 5: create an appropiate data structure for the revenue per time interval
         //  Start time of an interval is a key. Find the total revenue for each interval
 
-        return null;
+        if (minutes <= 0) {  // Check for valid interval
+            throw new IllegalArgumentException("Interval length must be positive.");
+        }
+        // Create an empty map to hold the total revenue per interval
+        Map<LocalTime, Double> revenuePerInterval = new TreeMap<>();
+
+        // Loop over each customer
+        customers.forEach(customer -> {
+            // Calculate the interval index of the customer's queuedAt time
+            LocalTime queuedAt = customer.getQueuedAt();
+            int queuedAtMinutes = queuedAt.getHour() * 60 + queuedAt.getMinute();
+            int intervalIndex = queuedAtMinutes / minutes;
+
+            // Convert the interval index back to LocalTime
+            LocalTime intervalStartTime = LocalTime.of(intervalIndex * minutes / 60, (intervalIndex * minutes) % 60);
+
+            // Get the customer's total bill
+            double totalBill = customer.calculateTotalBill();
+
+            // Add the total bill to the total revenue for the interval
+            revenuePerInterval.merge(intervalStartTime, totalBill, Double::sum);
+        });
+
+        return revenuePerInterval;
     }
+
 
     public Set<Product> getProducts() {
         return products;

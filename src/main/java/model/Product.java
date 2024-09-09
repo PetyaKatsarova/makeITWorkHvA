@@ -9,8 +9,7 @@ import java.util.Objects;
  */
 // petya adds implemets Comparable<>
 public class Product implements Comparable<Product> {
-//    petya
-//    private static Set<String> codes = new HashSet<>();
+
     private String code;            // a unique product code; identical codes designate identical products
     private String description;     // the product description, useful for reporting
     private double price;           // the product's price
@@ -19,13 +18,9 @@ public class Product implements Comparable<Product> {
     }
 
     public Product(String code, String description, double price) {
-//        petya
-//        if (codes.contains(code))
-//            throw new IllegalArgumentException("Product code must be unique.The code: "+code+" is already in use.");
         this.code = code;
         this.description = description;
         this.price = price;
-//        codes.add(code);
     }
 
     // TODO Stap 1: implement relevant overrides of equals(), hashcode(), compareTo for
@@ -50,7 +45,6 @@ public class Product implements Comparable<Product> {
 //        return Objects.hash(code, description, price);
     }
 
-    //  what to compareTo: this is to sort later by? price?hash
     @Override
     public int compareTo(Product o) {
         return this.code.compareTo(o.code);

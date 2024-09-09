@@ -9,10 +9,7 @@ import java.time.LocalTime;
 import java.util.*;
 
 public class Customer implements Comparable<Customer> {
-    //    petya
-//    private static Set<LocalTime> customersQueuedAt = new HashSet<>();
-    //    We gaan er van uit dat de aankomsttijd van een klant uniek is.
-    private LocalTime queuedAt;      // time of arrival at cashier
+    private LocalTime queuedAt;      // time of arrival at cashier, this is unique val
     private String zipCode;          // zip-code of the customer
     private Map<Product, Integer> itemsCart = new HashMap<>();     // items purchased by customer
     private int actualWaitingTime;   // actual waiting time in seconds before check-out
@@ -22,15 +19,12 @@ public class Customer implements Comparable<Customer> {
     }
 
     public Customer(LocalTime queuedAt, String zipCode) {
-//        if (customersQueuedAt.contains(queuedAt))
-//            throw new IllegalArgumentException("QueuedAt must be unique: " + queuedAt + " is already in use.");
         this.queuedAt = queuedAt;
         this.zipCode = zipCode;
-//        customersQueuedAt.add(queuedAt);
     }
 
-    // TODO stap 1: implement relevant overrides of equals(), hashcode(), compareTo for
-    //  model classes to be able to use them in sets, maps
+    //stap 1: implement relevant overrides of equals(), hashcode(), compareTo for
+    //  model classes to be able to use them in sets, maps  TODO
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -46,7 +40,6 @@ public class Customer implements Comparable<Customer> {
         return Objects.hash(queuedAt);
     }
 
-    //  what to compareTo: this is to sort later by? price?
     @Override
     public int compareTo(Customer o) {
         return this.queuedAt.compareTo(o.queuedAt);
@@ -67,8 +60,8 @@ public class Customer implements Comparable<Customer> {
 
 
     public void addToCart(Product product, int number) {
-        // TODO stap 2: When adding a number of products to the cart,
-        //  the number should be adjusted when product already exists in cart
+        // stap 2: When adding a number of products to the cart,
+        //  the number should be adjusted when product already exists in cart TODO
         if (product.getCode() == null)
             throw new IllegalArgumentException("Product code cant be null");
 
@@ -85,10 +78,8 @@ public class Customer implements Comparable<Customer> {
     }
 
     public double calculateTotalBill() {
-//        double totalBill = 0.0; ORIGINAL CODE
         // stap 5: Calculate the total cost of all items, use a stream TODO
         return itemsCart.entrySet().stream().mapToDouble(e -> e.getKey().getPrice() * e.getValue()).sum();
-//        return totalBill; ORIGINAL CODE
     }
 
     public String toString() {

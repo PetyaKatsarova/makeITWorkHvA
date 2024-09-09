@@ -26,7 +26,6 @@ public class SupermarketBuilder {
         } catch (FileNotFoundException fileError) {
             System.out.println("File not found.");
         }
-//         wtf is happening here? GsonBulder with complex map keys and using date ??
         gson = new GsonBuilder().enableComplexMapKeySerialization()
                 .registerTypeAdapter(LocalTime.class, (JsonDeserializer<LocalTime>)
                         (json, typeOfT, context) -> LocalTime.parse(json.getAsString(), DateTimeFormatter.ISO_LOCAL_TIME))
